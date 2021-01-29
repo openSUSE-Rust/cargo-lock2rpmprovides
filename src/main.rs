@@ -8,6 +8,8 @@ struct Opt {
     #[structopt(short, long)]
     debug: bool,
     #[structopt(parse(from_os_str))]
+    _dummy: PathBuf,
+    #[structopt(parse(from_os_str))]
     input: Option<PathBuf>,
 }
 
