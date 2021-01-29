@@ -3,6 +3,10 @@ name = "cargo-lock2rpmprovides"
 version = "0.1.0"
 authors = ["William Brown <william@blackhats.net.au>"]
 edition = "2018"
+license = "MPL-2.0"
+description = "Cargo Lock to Rpm Provides"
+homepage = "https://github.com/Firstyear/cargo-lock2rpmprovides"
+repository = "https://github.com/Firstyear/cargo-lock2rpmprovides"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
