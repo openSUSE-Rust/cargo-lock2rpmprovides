@@ -68,13 +68,24 @@ fn do_license_check(vendordir: &Path, debug: bool) -> Option<String> {
     }
 
     match (config.package.license, config.package.license_file) {
-        (Some(mut lic), _) => {
+        (Some(lic), _) => {
+            // We have to do a bit of normalisation here.
             // If it contains an operator, we need braces.
+            let mut lic = lic.replace(" / ", " OR ")
+                .replace("/", " OR ");
+
             if lic.contains("OR") || lic.contains("AND") {
                 lic.insert_str(0, "( ");
                 lic.push_str(" )");
             }
-            Some(lic)
+
+            // Some common replacements to avoid duplication.
+            match lic.as_str() {
+                "( MIT OR Apache-2.0 )" => Some("( Apache-2.0 OR MIT )".to_string()),
+                _ => Some(lic),
+            }
+
+
         }
         (None, Some(fname)) => {
             let license_file = vendordir.join(fname);
@@ -156,7 +167,30 @@ fn main() {
     }
 
     for pkg in &config.package {
-        println!("Provides: bundled(crate({})) = {}", pkg.name, pkg.version);
+        // There are some versions that can be problematic due to multiple hyphens.
+        // This tries to account for that ...
+        // 
+
+        let mut version = pkg.version.clone();
+
+        let mut hyphens: Vec<_> = pkg.version
+            .char_indices()
+            .rev()
+            .filter_map(|(i, c)| if c == '-' { Some(i) } else { None })
+            .collect();
+
+        if opt.debug {
+            eprintln!("hypens -> {:?}", hyphens);
+        }
+
+        // Remove the last one (should be the first hypen, if present)
+        hyphens.pop();
+
+        for i in hyphens.iter() {
+            version.replace_range(*i..(i+1), "_");
+        }
+
+        println!("Provides: bundled(crate({})) = {}", pkg.name, version);
     }
 
     let mut license = String::new();
